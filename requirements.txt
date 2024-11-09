@@ -4,3 +4,5 @@ pandas
 numpy
 Pillow  # 이미지 처리를 위해 사용
 PyMuPDF  # fitz 모듈을 사용하려면 이 패키지를 설치해야 합니다
+base64
+qrcode

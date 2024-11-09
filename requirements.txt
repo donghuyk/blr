@@ -4,4 +4,4 @@ pandas
 numpy
 Pillow
 PyMuPDF
-# pywin32==308  # 이 줄을 제거합니다.
+qrcode

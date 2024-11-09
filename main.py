@@ -4,13 +4,11 @@ import pandas as pd
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from streamlit_pdf_viewer import pdf_viewer
 from PIL import Image
 import sqlite3
 from datetime import date
 from io import BytesIO
-import fitz
-import io
+import fitz  # PyMuPDF for PDF processing
 import base64
 import matplotlib.dates as mdates
 import qrcode
@@ -55,10 +53,29 @@ elif page == "QR 코드 생성":
     img = qr.make_image(fill_color="black", back_color="white")
 
     # Streamlit으로 QR 코드 이미지 표시
-    buffer = io.BytesIO()
+    buffer = BytesIO()
     img.save(buffer, format="PNG")
     st.image(buffer.getvalue(), caption="이 QR 코드를 스캔하여 웹 애플리케이션에 접속하세요.")
 
     # QR 코드 이미지 다운로드 버튼 추가
     buffer.seek(0)
     st.download_button(label="QR 코드 다운로드", data=buffer, file_name="web_qr_code.png", mime="image/png")
+
+# PDF 파일 표시 함수
+def show_pdf(file_data):
+    base64_pdf = base64.b64encode(file_data).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
+
+# PDF 파일을 데이터베이스에서 불러와 보여주는 함수
+def load_and_display_pdf_from_db(database_path, file_id):
+    conn = sqlite3.connect(database_path)
+    c = conn.cursor()
+    c.execute('SELECT file_data FROM pdf_files WHERE id = ?', (file_id,))
+    pdf_data = c.fetchone()[0]
+    conn.close()
+
+    show_pdf(pdf_data)
+
+if __name__ == "__main__":
+    app()

@@ -1,22 +1,11 @@
 import streamlit as st
-import datetime
 import pandas as pd
-import numpy as np
-import time
-import matplotlib.pyplot as plt
-from streamlit_pdf_viewer import pdf_viewer
-from PIL import Image
 import sqlite3
-from datetime import date
 from io import BytesIO
-import fitz
-import io
 import base64
-import matplotlib.dates as mdates
 
 def app():
     st.title("보일러 메뉴얼")
-    
     
     # 데이터베이스 초기화 함수
     def init_db():
@@ -67,8 +56,6 @@ def app():
     # 데이터베이스 초기화
     init_db()
 
-    # Streamlit UI 구성
-
     # PDF 파일 업로드 기능 (관리자 모드에서만 가능)
     is_admin = st.sidebar.checkbox("관리자 모드 활성화")
     if is_admin:
@@ -101,7 +88,7 @@ def app():
             show_pdf(pdf_data)
             st.download_button(label="PDF 파일 다운로드", data=pdf_data, file_name=selected_file_name)
     elif not is_admin and pdf_files:
-       
+        # 사용자 모드에서 저장된 PDF 파일 목록 표시
         file_selection = st.selectbox("PDF 파일을 선택하세요", pdf_files, format_func=lambda x: x[1])
         
         if file_selection:
@@ -116,3 +103,6 @@ def app():
             st.download_button(label="PDF 파일 다운로드", data=pdf_data, file_name=selected_file_name)
     else:
         st.sidebar.write("저장된 PDF 파일이 없습니다.")
+
+if __name__ == "__main__":
+    app()

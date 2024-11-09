@@ -5,3 +5,4 @@ numpy
 Pillow
 PyMuPDF
 qrcode
+python-docx

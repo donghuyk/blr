@@ -3,5 +3,5 @@ matplotlib
 pandas
 numpy
 Pillow
-PyMuPDF==1.18.19  # 버전을 명시해서 안정적인 설치를 시도
+pdfplumber
 qrcode

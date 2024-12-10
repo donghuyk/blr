@@ -44,6 +44,18 @@ def delete_pdf_from_db(file_id):
     conn.commit()
     conn.close()
 
+# PDF 데이터 불러오기
+def load_pdf_data_from_db(file_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT file_data FROM pdf_files WHERE id = ?", (file_id,))
+    result = c.fetchone()
+    conn.close()
+    if result:
+        return result[0]
+    else:
+        return None
+
 # PDF 보기
 def show_pdf(file_data):
     base64_pdf = base64.b64encode(file_data).decode('utf-8')
@@ -73,7 +85,7 @@ def app():
             file_data = uploaded_file.read()
             save_pdf_to_db(file_name, file_data)
             st.sidebar.success(f"'{file_name}' 파일이 업로드되었습니다!")
-            st.session_state.updated = True  # 상태 갱신
+            st.session_state.updated = True
 
     # PDF 삭제
     st.sidebar.header("PDF 파일 삭제")
@@ -88,13 +100,13 @@ def app():
             if st.sidebar.button("삭제"):
                 delete_pdf_from_db(file_to_delete[0])
                 st.sidebar.success(f"'{file_to_delete[1]}' 파일이 삭제되었습니다!")
-                st.session_state.updated = True  # 상태 갱신
+                st.session_state.updated = True
     else:
         st.sidebar.write("삭제할 PDF 파일이 없습니다.")
 
     # 상태 변경에 따른 새로고침
     if st.session_state.updated:
-        st.experimental_set_query_params(updated="true")
+        st.query_params(updated="true")  # 쿼리 매개변수 사용
         st.session_state.updated = False
 
     # PDF 목록
@@ -106,13 +118,12 @@ def app():
             format_func=lambda x: x[1]
         )
         if selected_file:
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            c.execute("SELECT file_data FROM pdf_files WHERE id = ?", (selected_file[0],))
-            file_data = c.fetchone()[0]
-            conn.close()
-            st.subheader(f"'{selected_file[1]}' 보기")
-            show_pdf(file_data)
+            pdf_data = load_pdf_data_from_db(selected_file[0])
+            if pdf_data:
+                st.subheader(f"'{selected_file[1]}' 보기")
+                show_pdf(pdf_data)
+            else:
+                st.error("PDF 데이터를 불러오는 데 실패했습니다. 파일이 손상되었거나 삭제되었을 수 있습니다.")
     else:
         st.write("저장된 PDF 파일이 없습니다.")
 

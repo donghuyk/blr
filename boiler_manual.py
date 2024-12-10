@@ -1,7 +1,6 @@
 import streamlit as st
 import sqlite3
 import base64
-import os
 
 # 데이터베이스 경로 설정
 DB_PATH = "/tmp/pdf_files.db"
@@ -58,6 +57,10 @@ def app():
     # 데이터베이스 초기화
     init_db()
 
+    # 상태 초기화
+    if "updated" not in st.session_state:
+        st.session_state.updated = False
+
     # 관리자 모드
     is_admin = st.sidebar.checkbox("관리자 모드 활성화")
 
@@ -70,6 +73,7 @@ def app():
             file_data = uploaded_file.read()
             save_pdf_to_db(file_name, file_data)
             st.sidebar.success(f"'{file_name}' 파일이 업로드되었습니다!")
+            st.session_state.updated = True  # 상태 갱신
 
     # PDF 삭제
     st.sidebar.header("PDF 파일 삭제")
@@ -84,9 +88,14 @@ def app():
             if st.sidebar.button("삭제"):
                 delete_pdf_from_db(file_to_delete[0])
                 st.sidebar.success(f"'{file_to_delete[1]}' 파일이 삭제되었습니다!")
-                st.experimental_rerun()
+                st.session_state.updated = True  # 상태 갱신
     else:
         st.sidebar.write("삭제할 PDF 파일이 없습니다.")
+
+    # 상태 변경에 따른 새로고침
+    if st.session_state.updated:
+        st.experimental_set_query_params(updated="true")
+        st.session_state.updated = False
 
     # PDF 목록
     st.sidebar.header("PDF 파일 목록")

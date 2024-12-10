@@ -106,8 +106,9 @@ def app():
 
     # 상태 변경에 따른 새로고침
     if st.session_state.updated:
-        st.query_params(updated="true")  # 쿼리 매개변수 사용
+        # 상태를 초기화하여 새로고침 효과를 유도
         st.session_state.updated = False
+        st.experimental_rerun()  # Streamlit 페이지 새로고침
 
     # PDF 목록
     st.sidebar.header("PDF 파일 목록")

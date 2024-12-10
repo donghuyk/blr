@@ -51,6 +51,14 @@ def app():
         conn.close()
         return result[0] if result else None
 
+    # 특정 PDF 파일을 데이터베이스에서 삭제하는 함수
+    def delete_pdf_from_db(file_id):
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute('DELETE FROM pdf_files WHERE id = ?', (file_id,))
+        conn.commit()
+        conn.close()
+
     # PDF를 브라우저 새 탭에서 열 수 있는 링크 생성 함수
     def show_pdf_new_tab(file_data, file_name):
         # 임시 파일 생성
@@ -87,6 +95,22 @@ def app():
             file_data = uploaded_file.read()
             save_pdf_to_db(file_name, file_data)
             st.sidebar.success(f"'{file_name}' 파일이 성공적으로 저장되었습니다!")
+        
+        # 저장된 PDF 파일 목록에서 삭제 기능 추가
+        st.sidebar.header("PDF 파일 삭제")
+        pdf_files = load_pdf_list_from_db()
+        if pdf_files:
+            file_to_delete = st.sidebar.selectbox(
+                "삭제할 파일을 선택하세요",
+                pdf_files,
+                format_func=lambda x: x[1]  # 파일 이름만 표시
+            )
+            if st.sidebar.button("삭제"):
+                delete_pdf_from_db(file_to_delete[0])
+                st.sidebar.success(f"'{file_to_delete[1]}' 파일이 삭제되었습니다!")
+                st.experimental_rerun()  # 삭제 후 페이지 새로고침
+        else:
+            st.sidebar.write("삭제할 PDF 파일이 없습니다.")
 
     # 저장된 PDF 파일 목록 가져오기
     pdf_files = load_pdf_list_from_db()

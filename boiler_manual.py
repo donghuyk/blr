@@ -3,6 +3,7 @@ import sqlite3
 from io import BytesIO
 import base64
 import os
+import tempfile
 
 def app():
     st.title("보일러 메뉴얼 관리")
@@ -50,11 +51,26 @@ def app():
         conn.close()
         return result[0] if result else None
 
-    # PDF 데이터를 iframe으로 표시하는 함수
-    def show_pdf(file_data):
-        base64_pdf = base64.b64encode(file_data).decode('utf-8')
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
+    # PDF를 브라우저 새 탭에서 열 수 있는 링크 생성 함수
+    def show_pdf_new_tab(file_data, file_name):
+        # 임시 파일 생성
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(file_data)
+            tmp_file_path = tmp_file.name
+        
+        # 링크를 통해 새 탭에서 PDF 열기
+        st.markdown(
+            f'[**PDF 새 탭에서 보기**](file://{tmp_file_path})',
+            unsafe_allow_html=True
+        )
+        
+        # PDF 다운로드 버튼 제공
+        st.download_button(
+            label="PDF 다운로드",
+            data=file_data,
+            file_name=file_name,
+            mime="application/pdf"
+        )
 
     # 데이터베이스 초기화
     init_db()
@@ -90,17 +106,9 @@ def app():
             pdf_data = load_pdf_data_from_db(selected_file_id)
             
             if pdf_data:
-                # PDF 파일 보기
+                # PDF 새 탭에서 보기 및 다운로드 제공
                 st.subheader(f"'{selected_file_name}' 보기")
-                show_pdf(pdf_data)
-
-                # 다운로드 버튼 추가
-                st.download_button(
-                    label="PDF 파일 다운로드",
-                    data=pdf_data,
-                    file_name=selected_file_name,
-                    mime="application/pdf"
-                )
+                show_pdf_new_tab(pdf_data, selected_file_name)
     else:
         st.write("저장된 PDF 파일이 없습니다. PDF 파일을 업로드하세요!")
 

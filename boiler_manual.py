@@ -93,4 +93,32 @@ def app():
 
     # PDF 파일 목록 표시
     if pdf_files:
-        st.s
+        st.sidebar.header("PDF 파일 목록")
+        selected_file = st.sidebar.selectbox(
+            "PDF 파일을 선택하세요",
+            pdf_files,
+            format_func=lambda x: x[1]  # 파일 이름만 표시
+        )
+
+        if selected_file:
+            selected_file_id = selected_file[0]
+            selected_file_name = selected_file[1]
+            pdf_data = load_pdf_data_from_db(selected_file_id)
+            
+            if pdf_data:
+                # PDF iframe으로 표시
+                st.subheader(f"'{selected_file_name}' 보기")
+                show_pdf(pdf_data)
+
+                # 다운로드 버튼 제공
+                st.download_button(
+                    label="PDF 다운로드",
+                    data=pdf_data,
+                    file_name=selected_file_name,
+                    mime="application/pdf"
+                )
+    else:
+        st.write("저장된 PDF 파일이 없습니다. PDF 파일을 업로드하세요!")
+
+if __name__ == "__main__":
+    app()

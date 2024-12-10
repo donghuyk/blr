@@ -21,7 +21,7 @@ import boiler_operations
 # 사이드바에서 페이지 선택
 page = st.sidebar.selectbox(
     "페이지 선택",
-    ("보일러 메뉴얼", "재고관리", "Trouble Shooting", "보일러 작업", "QR 코드 생성")
+    ("보일러 메뉴얼", "재고관리", "Trouble Shooting", "보일러 작업", "RAG")
 )
 
 # 선택된 페이지에 따라 해당 모듈 실행
@@ -33,33 +33,22 @@ elif page == "Trouble Shooting":
     troubleshooting.app()
 elif page == "보일러 작업":
     boiler_operations.app()
-elif page == "QR 코드 생성":
-    st.title("QR 코드 생성 및 공유")
+elif page == "RAG":
+    st.title("RAG (Retrieve and Generate)")
+    st.markdown("**RAG 페이지에 오신 것을 환영합니다!**")
+    st.write("여기에서 RAG 관련 링크 및 기능을 확인할 수 있습니다.")
 
-    # 웹 애플리케이션 URL 설정 (여기에 실제 웹 URL을 사용하세요)
-    web_url = "http://localhost:8501"  # 배포된 웹 URL로 변경 필요
+    # 링크 버튼 추가
+    RAG_link = st.button("Go to RAG Documentation")
+    GPT_link = st.button("Go to GPT Model")
 
-    # QR 코드 생성
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(web_url)
-    qr.make(fit=True)
+    if RAG_link:
+        st.write("RAG 관련 문서 링크로 이동 중입니다...")
+        st.markdown("[Visit RAG Documentation](https://example.com/rag-docs)")
 
-    # QR 코드 이미지를 생성
-    img = qr.make_image(fill_color="black", back_color="white")
-
-    # Streamlit으로 QR 코드 이미지 표시
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    st.image(buffer.getvalue(), caption="이 QR 코드를 스캔하여 웹 애플리케이션에 접속하세요.")
-
-    # QR 코드 이미지 다운로드 버튼 추가
-    buffer.seek(0)
-    st.download_button(label="QR 코드 다운로드", data=buffer, file_name="web_qr_code.png", mime="image/png")
+    if GPT_link:
+        st.write("GPT 모델 관련 링크로 이동 중입니다...")
+        st.markdown("[Visit GPT Model](https://example.com/gpt)")
 
 # PDF 파일 표시 함수
 def show_pdf(file_data):
@@ -76,6 +65,3 @@ def load_and_display_pdf_from_db(database_path, file_id):
     conn.close()
 
     show_pdf(pdf_data)
-
-if __name__ == "__main__":
-    app()

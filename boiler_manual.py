@@ -3,7 +3,6 @@ import sqlite3
 from io import BytesIO
 import base64
 import os
-import tempfile
 
 def app():
     st.title("보일러 메뉴얼 관리")
@@ -51,34 +50,11 @@ def app():
         conn.close()
         return result[0] if result else None
 
-    # 특정 PDF 파일을 데이터베이스에서 삭제하는 함수
-    def delete_pdf_from_db(file_id):
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute('DELETE FROM pdf_files WHERE id = ?', (file_id,))
-        conn.commit()
-        conn.close()
-
-    # PDF를 브라우저 새 탭에서 열 수 있는 링크 생성 함수
-    def show_pdf_new_tab(file_data, file_name):
-        # 임시 파일 생성
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            tmp_file.write(file_data)
-            tmp_file_path = tmp_file.name
-        
-        # 링크를 통해 새 탭에서 PDF 열기
-        st.markdown(
-            f'[**PDF 새 탭에서 보기**](file://{tmp_file_path})',
-            unsafe_allow_html=True
-        )
-        
-        # PDF 다운로드 버튼 제공
-        st.download_button(
-            label="PDF 다운로드",
-            data=file_data,
-            file_name=file_name,
-            mime="application/pdf"
-        )
+    # PDF를 iframe으로 표시하는 함수
+    def show_pdf(file_data):
+        base64_pdf = base64.b64encode(file_data).decode('utf-8')
+        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
 
     # 데이터베이스 초기화
     init_db()
@@ -117,24 +93,4 @@ def app():
 
     # PDF 파일 목록 표시
     if pdf_files:
-        st.sidebar.header("PDF 파일 목록")
-        selected_file = st.sidebar.selectbox(
-            "PDF 파일을 선택하세요",
-            pdf_files,
-            format_func=lambda x: x[1]  # 파일 이름만 표시
-        )
-
-        if selected_file:
-            selected_file_id = selected_file[0]
-            selected_file_name = selected_file[1]
-            pdf_data = load_pdf_data_from_db(selected_file_id)
-            
-            if pdf_data:
-                # PDF 새 탭에서 보기 및 다운로드 제공
-                st.subheader(f"'{selected_file_name}' 보기")
-                show_pdf_new_tab(pdf_data, selected_file_name)
-    else:
-        st.write("저장된 PDF 파일이 없습니다. PDF 파일을 업로드하세요!")
-
-if __name__ == "__main__":
-    app()
+        st.s

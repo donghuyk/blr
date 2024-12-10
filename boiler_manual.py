@@ -70,8 +70,8 @@ def app():
     init_db()
 
     # 상태 초기화
-    if "updated" not in st.session_state:
-        st.session_state.updated = False
+    if "pdf_files" not in st.session_state:
+        st.session_state.pdf_files = load_pdf_list_from_db()
 
     # 관리자 모드
     is_admin = st.sidebar.checkbox("관리자 모드 활성화")
@@ -85,37 +85,32 @@ def app():
             file_data = uploaded_file.read()
             save_pdf_to_db(file_name, file_data)
             st.sidebar.success(f"'{file_name}' 파일이 업로드되었습니다!")
-            st.session_state.updated = True
+            # 상태 업데이트
+            st.session_state.pdf_files = load_pdf_list_from_db()
 
     # PDF 삭제
     st.sidebar.header("PDF 파일 삭제")
-    pdf_files = load_pdf_list_from_db()
-    if pdf_files:
+    if st.session_state.pdf_files:
         file_to_delete = st.sidebar.selectbox(
             "삭제할 파일을 선택하세요",
-            pdf_files,
+            st.session_state.pdf_files,
             format_func=lambda x: x[1]
         )
         if file_to_delete:
             if st.sidebar.button("삭제"):
                 delete_pdf_from_db(file_to_delete[0])
                 st.sidebar.success(f"'{file_to_delete[1]}' 파일이 삭제되었습니다!")
-                st.session_state.updated = True
+                # 상태 업데이트
+                st.session_state.pdf_files = load_pdf_list_from_db()
     else:
         st.sidebar.write("삭제할 PDF 파일이 없습니다.")
 
-    # 상태 변경에 따른 새로고침
-    if st.session_state.updated:
-        # 상태를 초기화하여 새로고침 효과를 유도
-        st.session_state.updated = False
-        st.experimental_rerun()  # Streamlit 페이지 새로고침
-
     # PDF 목록
     st.sidebar.header("PDF 파일 목록")
-    if pdf_files:
+    if st.session_state.pdf_files:
         selected_file = st.sidebar.selectbox(
             "PDF 파일을 선택하세요",
-            pdf_files,
+            st.session_state.pdf_files,
             format_func=lambda x: x[1]
         )
         if selected_file:
